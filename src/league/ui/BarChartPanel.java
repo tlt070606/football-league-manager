@@ -26,13 +26,17 @@ public class BarChartPanel extends JPanel {
 
     private List<Standing> standings;
 
+    /** 创建积分柱状图组件，默认尺寸 700×300，背景白色 */
     public BarChartPanel() {
-        setPreferredSize(new Dimension(600, 300));
+        setPreferredSize(new Dimension(700, 300));
         setBackground(BG_COLOR);
-        setBorder(BorderFactory.createTitledBorder("积分对比图"));
+        setBorder(BorderFactory.createTitledBorder("积分对比图（前3名金银铜高亮）"));
     }
 
-    /** 更新积分数据并重绘 */
+    /**
+     * 更新积分数据并重绘柱状图
+     * @param standings 排序后的球队积分列表
+     */
     public void updateData(List<Standing> standings) {
         this.standings = standings;
         repaint();

@@ -20,8 +20,9 @@ public class Match {
     private String stadium;         // 比赛场地
     private boolean played;         // 是否已进行
 
-    /** 无参构造器（Gson 需要） */
+    /** 无参构造器（Gson 反序列化需要） */
     public Match() {
+        // 取 UUID 前 8 位作为短 ID（课程项目数据量小，碰撞概率可忽略）
         this.id = UUID.randomUUID().toString().substring(0, 8);
         this.homeScore = -1;
         this.awayScore = -1;
@@ -59,7 +60,7 @@ public class Match {
         return awayScore - homeScore;
     }
 
-    /** 获取比分显示字符串，如 "2:1" 或 "-:-" (未赛) */
+    /** 获取比分显示字符串，如 "2 : 1" 或 "- : -" (未赛) */
     public String getScoreDisplay() {
         if (!played) return "- : -";
         return homeScore + " : " + awayScore;

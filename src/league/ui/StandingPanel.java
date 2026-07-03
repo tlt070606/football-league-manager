@@ -19,7 +19,10 @@ public class StandingPanel extends JPanel {
     private StandingTableModel tableModel;
     private BarChartPanel barChart;
     private JLabel statusLabel;
+    private JComboBox<String> groupFilter;
+    private String selectedGroup = "全部";  // 当前筛选的小组
 
+    /** 创建积分榜面板，包含排名表格、柱状图和状态栏 */
     public StandingPanel() {
         this.manager = LeagueManager.getInstance();
         initUI();
@@ -29,11 +32,22 @@ public class StandingPanel extends JPanel {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // ===== 顶部：标题 + 刷新按钮 =====
+        // ===== 顶部：标题 + 小组筛选 + 刷新按钮 =====
         JPanel topPanel = new JPanel(new BorderLayout());
-        JLabel titleLabel = new JLabel("中超联赛积分榜");
+        JLabel titleLabel = new JLabel("世界杯积分榜");
         titleLabel.setFont(new Font("Microsoft YaHei", Font.BOLD, 16));
         topPanel.add(titleLabel, BorderLayout.WEST);
+
+        // 小组筛选
+        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+        centerPanel.add(new JLabel("小组:"));
+        groupFilter = new JComboBox<>(new String[]{"全部", "A", "B", "C", "D", "E", "F", "G", "H"});
+        groupFilter.addActionListener(e -> {
+            selectedGroup = (String) groupFilter.getSelectedItem();
+            refreshData();
+        });
+        centerPanel.add(groupFilter);
+        topPanel.add(centerPanel, BorderLayout.CENTER);
 
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton refreshBtn = new JButton("刷新积分榜");
@@ -61,14 +75,17 @@ public class StandingPanel extends JPanel {
         tableScroll.setPreferredSize(new Dimension(600, 200));
         add(tableScroll, BorderLayout.CENTER);
 
-        // ===== 下部：柱状图 =====
+        // ===== 下部：柱状图 + 状态栏 =====
+        // BorderLayout.SOUTH 只能容纳一个组件，用包裹面板容纳柱状图和状态栏
+        JPanel southWrapper = new JPanel(new BorderLayout());
         barChart = new BarChartPanel();
-        add(barChart, BorderLayout.SOUTH);
+        southWrapper.add(barChart, BorderLayout.CENTER);
 
-        // ===== 底部状态栏 =====
         statusLabel = new JLabel(" ");
         statusLabel.setBorder(BorderFactory.createEtchedBorder());
-        add(statusLabel, BorderLayout.SOUTH);
+        southWrapper.add(statusLabel, BorderLayout.SOUTH);
+
+        add(southWrapper, BorderLayout.SOUTH);
 
         refreshData();
     }
@@ -76,16 +93,32 @@ public class StandingPanel extends JPanel {
     /** 刷新积分数据（外部调用） */
     public void refreshData() {
         manager.updateStandings();
-        List<Standing> standings = manager.getStandings();
-        tableModel.setStandings(standings);
-        barChart.updateData(standings);
+        List<Standing> allStandings = manager.getStandings();
+
+        // 按小组筛选
+        List<Standing> filtered;
+        if ("全部".equals(selectedGroup)) {
+            filtered = allStandings;
+        } else {
+            filtered = new java.util.ArrayList<>();
+            for (Standing s : allStandings) {
+                var team = manager.getTeam(s.getTeamId());
+                if (team != null && selectedGroup.equals(team.getGroup())) {
+                    filtered.add(s);
+                }
+            }
+        }
+
+        tableModel.setStandings(filtered);
+        barChart.updateData(filtered);
 
         int totalMatches = manager.getAllMatches().size();
         long played = manager.getAllMatches().stream()
                 .filter(m -> m.isPlayed()).count();
+        String groupLabel = "全部".equals(selectedGroup) ? "全部" : selectedGroup + "组";
         statusLabel.setText(String.format(
-                "  共 %d 支球队 | %d 场比赛 | 已完成 %d 场",
-                standings.size(), totalMatches, played));
+                "  %s | %d 支球队 | %d 场比赛 | 已完成 %d 场",
+                groupLabel, filtered.size(), totalMatches, played));
     }
 }
 

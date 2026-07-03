@@ -19,10 +19,14 @@ import java.util.*;
  * 数据文件存放在项目根目录的 data/ 文件夹下。
  */
 public class FileManager {
+    /** 数据存储目录（相对于 JVM 工作目录，即项目根目录） */
     private static final String DATA_DIR = "data";
+    /** 球队数据文件名 */
     private static final String TEAMS_FILE = "teams.json";
+    /** 比赛数据文件名 */
     private static final String MATCHES_FILE = "matches.json";
 
+    /** 配置了 prettyPrinting 的 Gson 实例，JSON 输出格式化便于人工查看 */
     private final Gson gson;
 
     public FileManager() {
@@ -45,13 +49,19 @@ public class FileManager {
 
     // ==================== 球队数据 ====================
 
-    /** 保存球队数据到 JSON 文件 */
+    /**
+     * 保存球队数据到 JSON 文件
+     * @param teams 球队 Map（key=ID, value=Team 对象）
+     */
     public void saveTeams(Map<String, Team> teams) {
         List<Team> teamList = new ArrayList<>(teams.values());
         writeJson(teamList, TEAMS_FILE);
     }
 
-    /** 从 JSON 文件加载球队数据，返回 Map<id, Team> */
+    /**
+     * 从 JSON 文件加载球队数据
+     * @return Map<球队ID, Team>，若无数据则返回空 Map
+     */
     public Map<String, Team> loadTeams() {
         List<Team> teamList = readJsonList(TEAMS_FILE, Team.class);
         Map<String, Team> map = new LinkedHashMap<>();
@@ -65,12 +75,18 @@ public class FileManager {
 
     // ==================== 比赛数据 ====================
 
-    /** 保存比赛数据到 JSON 文件 */
+    /**
+     * 保存比赛数据到 JSON 文件
+     * @param matches 待保存的比赛列表
+     */
     public void saveMatches(List<Match> matches) {
         writeJson(matches, MATCHES_FILE);
     }
 
-    /** 从 JSON 文件加载比赛数据 */
+    /**
+     * 从 JSON 文件加载比赛数据
+     * @return 比赛列表，若无数据则返回空列表
+     */
     public List<Match> loadMatches() {
         List<Match> list = readJsonList(MATCHES_FILE, Match.class);
         return list != null ? list : new ArrayList<>();
@@ -105,7 +121,10 @@ public class FileManager {
         }
     }
 
-    /** 检查数据文件是否存在 */
+    /**
+     * 检查数据文件是否存在（只检查 teams.json）
+     * @return true 表示已有球队数据文件
+     */
     public boolean hasExistingData() {
         return Files.exists(Paths.get(DATA_DIR, TEAMS_FILE));
     }

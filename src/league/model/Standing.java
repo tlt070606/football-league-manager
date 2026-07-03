@@ -2,9 +2,10 @@ package league.model;
 
 /**
  * 积分记录类
- * 存储一支球队在联赛中的各项统计数据
+ * 存储一支球队在联赛中的各项统计数据。
+ * 注意：排名排序规则在 LeagueManager.updateStandings() 中实现，
+ * 而非本类的 compareTo。规则：积分 > 净胜球 > 进球数 > 队名。
  *
- * 排名规则依次比较: 积分 > 净胜球 > 进球数 > 并列
  * 积分计算: 胜=3分, 平=1分, 负=0分
  */
 public class Standing {
@@ -21,12 +22,23 @@ public class Standing {
 
     public Standing() {}
 
+    /**
+     * 构造器
+     * @param teamId   球队唯一编号
+     * @param teamName 球队名称
+     */
     public Standing(String teamId, String teamName) {
         this.teamId = teamId;
         this.teamName = teamName;
     }
 
-    /** 根据一场比赛的结果更新本队的统计数据 */
+    /**
+     * 根据一场比赛的结果更新本队的统计数据
+     * @param match      比赛数据（包含比分等信息，必须已完赛）
+     * @param isHomeTeam 当前球队是否为该场比赛的主队；
+     *                   true 时取主队进球作为本方进球，
+     *                   false 时取客队进球作为本方进球
+     */
     public void recordMatch(Match match, boolean isHomeTeam) {
         played++;
 

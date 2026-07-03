@@ -27,11 +27,21 @@ import java.util.*;
 public class ScheduleGenerator {
 
     /**
-     * 为给定的球队列表生成主客场双循环赛程
+     * 为给定的球队列表生成主客场双循环赛程（全部轮次）
      * @param teams 球队列表
      * @return 所有比赛的列表，按轮次排序
      */
     public static List<Match> generate(List<Team> teams) {
+        return generate(teams, Integer.MAX_VALUE);
+    }
+
+    /**
+     * 为给定的球队列表生成主客场双循环赛程（限制最大轮次）
+     * @param teams     球队列表
+     * @param maxRounds 最大轮次数（超过则不生成后续轮次）
+     * @return 比赛列表，不超过 maxRounds 轮
+     */
+    public static List<Match> generate(List<Team> teams, int maxRounds) {
         if (teams == null || teams.size() < 2) {
             throw new IllegalArgumentException("至少需要2支球队才能生成赛程");
         }
@@ -60,11 +70,10 @@ public class ScheduleGenerator {
         Map<String, String> stadiumMap = buildStadiumMap(teams);
 
         // ===== 前半程：正常对阵 =====
-        for (int round = 0; round < totalRounds; round++) {
+        for (int round = 0; round < totalRounds && roundCounter <= maxRounds; round++) {
             List<Match> roundMatches = generateRoundMatches(
                     roundCounter++, circle, teams, stadiumMap, false);
             allMatches.addAll(roundMatches);
-            // 旋转：固定第0位，其余顺时针旋转
             rotateCircle(circle);
         }
 
@@ -76,7 +85,7 @@ public class ScheduleGenerator {
         if (isOdd) circle.add(null);
 
         // ===== 后半程：交换主客场 =====
-        for (int round = 0; round < totalRounds; round++) {
+        for (int round = 0; round < totalRounds && roundCounter <= maxRounds; round++) {
             List<Match> roundMatches = generateRoundMatches(
                     roundCounter++, circle, teams, stadiumMap, true);
             allMatches.addAll(roundMatches);

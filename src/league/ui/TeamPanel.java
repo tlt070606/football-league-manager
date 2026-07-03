@@ -19,6 +19,7 @@ public class TeamPanel extends JPanel {
     private JTextField searchField;
     private JLabel statusLabel;
 
+    /** 创建球队管理面板，初始化布局、表格和按钮事件 */
     public TeamPanel() {
         this.manager = LeagueManager.getInstance();
         initUI();
@@ -75,12 +76,14 @@ public class TeamPanel extends JPanel {
         table.setRowHeight(25);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.getTableHeader().setReorderingAllowed(false);
-        // 设置列宽
-        table.getColumnModel().getColumn(0).setPreferredWidth(70);   // 编号
-        table.getColumnModel().getColumn(1).setPreferredWidth(120);  // 名称
-        table.getColumnModel().getColumn(2).setPreferredWidth(100);  // 教练
-        table.getColumnModel().getColumn(3).setPreferredWidth(140);  // 主场
-        table.getColumnModel().getColumn(4).setPreferredWidth(50);   // 人数
+        // 设置列宽: 队徽 | 编号 | 名称 | 小组 | 教练 | 主场 | 人数
+        table.getColumnModel().getColumn(0).setPreferredWidth(40);   // 队徽
+        table.getColumnModel().getColumn(1).setPreferredWidth(60);   // 编号
+        table.getColumnModel().getColumn(2).setPreferredWidth(110);  // 名称
+        table.getColumnModel().getColumn(3).setPreferredWidth(40);   // 小组
+        table.getColumnModel().getColumn(4).setPreferredWidth(100);  // 教练
+        table.getColumnModel().getColumn(5).setPreferredWidth(130);  // 主场
+        table.getColumnModel().getColumn(6).setPreferredWidth(45);   // 人数
 
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
@@ -201,7 +204,7 @@ public class TeamPanel extends JPanel {
 
 /** 球队表格数据模型 */
 class TeamTableModel extends AbstractTableModel {
-    private final String[] columns = {"编号", "球队名称", "主教练", "主场", "人数"};
+    private final String[] columns = {"队徽", "编号", "球队名称", "小组", "主教练", "主场", "人数"};
     private List<Team> teams = List.of();
 
     public void setTeams(List<Team> teams) {
@@ -223,14 +226,30 @@ class TeamTableModel extends AbstractTableModel {
     public String getColumnName(int col) { return columns[col]; }
 
     @Override
+    public Class<?> getColumnClass(int col) {
+        // 队徽列返回 ImageIcon 类型，让 JTable 自动渲染图标
+        return col == 0 ? ImageIcon.class : String.class;
+    }
+
+    @Override
     public Object getValueAt(int row, int col) {
         Team t = teams.get(row);
         switch (col) {
-            case 0: return t.getId();
-            case 1: return t.getName();
-            case 2: return t.getCoach();
-            case 3: return t.getHomeStadium();
-            case 4: return t.getPlayerCount() + "人";
+            case 0: // 队徽：加载为小图标
+                if (t.getLogo() != null && !t.getLogo().isEmpty()) {
+                    java.io.File f = new java.io.File(t.getLogo());
+                    if (f.exists()) {
+                        return new ImageIcon(new ImageIcon(f.getAbsolutePath())
+                                .getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH));
+                    }
+                }
+                return null;
+            case 1: return t.getId();
+            case 2: return t.getName();
+            case 3: return t.getGroup() != null ? t.getGroup() : "-";
+            case 4: return t.getCoach();
+            case 5: return t.getHomeStadium();
+            case 6: return t.getPlayerCount() + "人";
             default: return "";
         }
     }

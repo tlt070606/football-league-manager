@@ -10,6 +10,10 @@ import javax.swing.*;
  * 启动足球联赛积分管理系统 GUI
  */
 public class Main {
+    /**
+     * 程序入口点 — 在 Swing 事件调度线程中启动 GUI
+     * @param args 命令行参数（未使用）
+     */
     public static void main(String[] args) {
         // 在事件调度线程中创建和显示 GUI（Swing 线程安全要求）
         SwingUtilities.invokeLater(() -> {

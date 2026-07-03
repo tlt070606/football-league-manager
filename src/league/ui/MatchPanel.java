@@ -21,6 +21,7 @@ public class MatchPanel extends JPanel {
     private JButton generateBtn;
     private JButton scoreBtn;
 
+    /** 创建比赛管理面板，初始化布局、下拉框和表格 */
     public MatchPanel() {
         this.manager = LeagueManager.getInstance();
         initUI();
@@ -50,6 +51,16 @@ public class MatchPanel extends JPanel {
         scoreBtn = new JButton("录入比分");
         scoreBtn.addActionListener(e -> recordScore());
         rightPanel.add(scoreBtn);
+
+        JButton simulateBtn = new JButton("🎲 一键模拟全部");
+        simulateBtn.setToolTipText("随机生成所有比赛的比分（世界杯风格比分分布）");
+        simulateBtn.addActionListener(e -> simulateAll());
+        rightPanel.add(simulateBtn);
+
+        JButton resetBtn = new JButton("🔄 重置数据");
+        resetBtn.setToolTipText("清除所有比赛记录，恢复32支世界杯球队初始状态");
+        resetBtn.addActionListener(e -> resetData());
+        rightPanel.add(resetBtn);
         topPanel.add(rightPanel, BorderLayout.EAST);
 
         add(topPanel, BorderLayout.NORTH);
@@ -89,7 +100,7 @@ public class MatchPanel extends JPanel {
         updateRoundCombo();
     }
 
-    /** 外部调用刷新 */
+    /** 外部调用刷新：更新轮次下拉框、比赛表格和按钮状态 */
     public void refreshData() {
         updateRoundCombo();
         refreshRound();
@@ -198,6 +209,73 @@ public class MatchPanel extends JPanel {
                         ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
             }
         }
+    }
+
+    /** 一键随机模拟全部比赛 */
+    private void simulateAll() {
+        // 无赛程时自动生成
+        if (!manager.hasSchedule()) {
+            if (manager.getTeamCount() < 2) {
+                JOptionPane.showMessageDialog(this,
+                        "至少需要 2 支球队才能生成赛程！", "提示", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            try {
+                manager.generateSchedule();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this,
+                        ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
+
+        long unplayed = manager.getAllMatches().stream()
+                .filter(m -> !m.isPlayed()).count();
+        if (unplayed == 0) {
+            int result = JOptionPane.showConfirmDialog(this,
+                    "所有比赛已模拟完毕。是否重新随机模拟？\n（将覆盖已有比分）",
+                    "确认", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (result != JOptionPane.YES_OPTION) return;
+            // 重置所有比赛为未赛
+            for (var m : manager.getAllMatches()) {
+                m.setPlayed(false);
+            }
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(this,
+                String.format("即将随机生成 %d 场比赛的比分（世界杯风格分布）。\n确认开始？",
+                        manager.getAllMatches().size()),
+                "确认模拟", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        if (confirm != JOptionPane.YES_OPTION) return;
+
+        manager.randomSimulateAll();
+        updateRoundCombo();
+        refreshRound();
+        updateButtons();
+        JOptionPane.showMessageDialog(this,
+                String.format("模拟完成！%d 场比赛比分已生成。\n请切换到「积分榜」查看排名。",
+                        manager.getAllMatches().size()),
+                "模拟完成", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /** 一键重置所有数据 */
+    private void resetData() {
+        int result = JOptionPane.showConfirmDialog(this,
+                "⚠️ 重置数据将执行以下操作：\n"
+                        + "• 清除所有比赛记录和比分\n"
+                        + "• 恢复 32 支世界杯球队初始数据\n"
+                        + "• 清除球队队徽（如有）\n\n"
+                        + "确认重置？",
+                "⚠️ 重置确认", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (result != JOptionPane.YES_OPTION) return;
+
+        manager.resetToPreset();
+        updateRoundCombo();
+        refreshRound();
+        updateButtons();
+        JOptionPane.showMessageDialog(this,
+                "数据已重置！已恢复 32 支世界杯球队初始状态。",
+                "重置完成", JOptionPane.INFORMATION_MESSAGE);
     }
 }
 

@@ -9,20 +9,27 @@ import java.util.UUID;
  * 存储球队的基本信息：名称、队徽、教练、球员名单、主场
  */
 public class Team {
-    private String id;
-    private String name;
-    private String logo;        // 队徽图片路径，可为空
-    private String coach;
-    private List<String> players;
-    private String homeStadium;
+    private String id;              // 球队唯一编号（UUID 前 8 位）
+    private String name;            // 球队名称
+    private String group;           // 所属小组 (A-H)，世界杯分组标签
+    private String logo;            // 队徽图片路径，可为空
+    private String coach;           // 主教练姓名
+    private List<String> players;   // 球员名单
+    private String homeStadium;     // 主场名称
 
     /** 无参构造器（Gson 反序列化需要） */
     public Team() {
+        // 取 UUID 前 8 位作为短 ID（课程项目数据量小，碰撞概率可忽略）
         this.id = UUID.randomUUID().toString().substring(0, 8);
         this.players = new ArrayList<>();
     }
 
-    /** 完整构造器 */
+    /**
+     * 完整构造器
+     * @param name        球队名称
+     * @param coach       主教练姓名
+     * @param homeStadium 主场名称
+     */
     public Team(String name, String coach, String homeStadium) {
         this();
         this.name = name;
@@ -37,6 +44,9 @@ public class Team {
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+
+    public String getGroup() { return group; }
+    public void setGroup(String group) { this.group = group; }
 
     public String getLogo() { return logo; }
     public void setLogo(String logo) { this.logo = logo; }

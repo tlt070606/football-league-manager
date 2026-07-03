@@ -104,7 +104,10 @@ public class ScoreDialog extends JDialog {
         getRootPane().setDefaultButton(confirmBtn);
     }
 
+    /** @return true 表示用户已点击"确认录入" */
     public boolean isConfirmed() { return confirmed; }
+    /** @return 用户输入的主队比分 */
     public int getHomeScore() { return (int) homeScoreSpinner.getValue(); }
+    /** @return 用户输入的客队比分 */
     public int getAwayScore() { return (int) awayScoreSpinner.getValue(); }
 }
