@@ -1,0 +1,14 @@
+# 编译输出
+out/
+
+# 运行时数据
+data/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
